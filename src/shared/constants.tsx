@@ -5,7 +5,22 @@ import type { MovieState } from "./types";
 export const URL_GENRES = "https://api.themoviedb.org/3/genre/movie/list?language=ru";
 export const URL_FILMS = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=ru-US";
 export const URL_REVIEW = "https://api.themoviedb.org/3/movie/";
+export const URL_FAVORITE = (userId: string) => `https://api.themoviedb.org/3/account/${userId}/favorite/movies?language=ru-US`;
+export const URL_CHECK_FAVORITE = (userId: string) => `https://api.themoviedb.org/3/account/${userId}/favorite`;
+export const URL_GET_USER_ID = "https://api.themoviedb.org/3/account";
+export const URL_SEARCH_MOVIE = (movieName: string) => `https://api.themoviedb.org/3/search/movie?query=${movieName}&language=ru-RU&page=1`
+
 //export const token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMDE4NzQwMTQyNWE3NzRlNzk3M2M2YTFlNjQ1NmQ0NSIsIm5iZiI6MTc1OTcwNzgxNS45MDYsInN1YiI6IjY4ZTMwMmE3NzYwNDAwNTJhOWMyMjc2OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.8h-qKQP6Qdh4s8jo8-Wa9f9_Ahk5DmUsfl6EKAI0fwU";
+
+export function getOptions(token: string) {
+	return {
+		method: "GET",
+		headers: {
+			accept: "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+	};
+}
 
 export const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 export const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -20,14 +35,17 @@ export const sortOptions = [
 ];
 
 export const DEFAULT_STRING_VALUE = "";
+export const DEFAULT_ARRAY_VALUE = [];
 
 export const initialState: MovieState = {
 	totalPages: 1,
 	page: 1,
 	sorting: sortOptions[0],
-	selectedGenres: [],
+	selectedGenres: DEFAULT_ARRAY_VALUE,
 	selectedYears: [2000, 2025],
-	searchMovie: "",
-	movies: [],
-	searchResult: [],
+	searchMovie: DEFAULT_STRING_VALUE,
+	movies: DEFAULT_ARRAY_VALUE,
+	searchResult: DEFAULT_ARRAY_VALUE,
+	isFavorite: false,
+	favorite: DEFAULT_ARRAY_VALUE,
 };

@@ -3,7 +3,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import Paper from "@mui/material/Paper";
 import Pagination from "@mui/material/Pagination";
 import SearchIcon from "@mui/icons-material/Search";
-import type { FiltersProps} from "../../shared/types";
+import type { FiltersProps } from "../../shared/types";
 import GenresList from "./filtering-by-genre";
 import FilteringByYears from "./filtering-by-years";
 import Sorting from "./sorting";
@@ -16,11 +16,15 @@ export default function Filters({ state, dispatch }: FiltersProps) {
 	}
 
 	function handlePageChange(_: React.ChangeEvent<unknown>, value: number) {
-		dispatch({ type: "SET_PAGE", change: value });
+		dispatch({ 
+			type: "SET_PAGE", change: value 
+		});
 	}
 
 	function handleSearchFilmChange(e: React.ChangeEvent<HTMLInputElement>) {
-		dispatch({ type: "SET_SEARCH", change: e.target.value });
+		dispatch({ 
+			type: "SET_SEARCH", change: e.target.value 
+		});
 	}
 	return (
 		<Paper

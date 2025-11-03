@@ -1,40 +1,32 @@
-import FormCard from "./form-card";
-import { DEFAULT_STRING_VALUE } from "../../shared/constants";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthTokenContext } from "./../../context/context";
+import FormCard from "./form-card";
+import { DEFAULT_STRING_VALUE, getOptions, URL_GET_USER_ID } from "../../shared/constants";
+import { fetchingApi } from "../../api";
+import { useSelector, useDispatch } from "react-redux";
+import type { AuthState } from "../../store/auth-reducer";
+import { setToken, setUserId } from "../../store/auth-action-types";
 
-export default function Form() {
+export default function Login() {
 	const [isVisibleTokenForm, setIsVisibleTokenForm] = useState(false);
 	const [emailValue, setEmailValue] = useState(DEFAULT_STRING_VALUE);
-	const [userId, setUserId] = useState<string | null>(null);
 	const navigate = useNavigate();
-
-	const { token, setToken } = useAuthTokenContext();
+	const token = useSelector((state: AuthState) => state.token);
+	const dispatch = useDispatch();
 
 	useEffect(() => {
-		async function fetchingID() {
+		async function setId() {
 			if (!token) return;
-			const url = "https://api.themoviedb.org/3/account";
-			const options = {
-				method: "GET",
-				headers: {
-					accept: "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-			};
 			try {
-				const response = await fetch(url, options);
-				const result = await response.json();
-				setUserId(result.id);
-				localStorage.setItem("id", userId || "");
-				console.log(result);
+				const dataId = await fetchingApi({ url: URL_GET_USER_ID, options: getOptions(token) });
+				dispatch(setUserId(dataId.id));
+				localStorage.setItem("id", dataId.id || "");
 			} catch (error) {
 				console.error(error);
 			}
 		}
-		fetchingID();
-	}, [token, userId]);
+		setId();
+	}, [token, dispatch]);
 
 	function handleOpenTokenFormClick() {
 		setIsVisibleTokenForm(true);
@@ -50,7 +42,7 @@ export default function Form() {
 	}
 
 	function handleTokenValueChange(e: React.ChangeEvent<HTMLInputElement>) {
-		setToken(e.target.value);
+		dispatch(setToken(e.target.value));
 	}
 
 	return (

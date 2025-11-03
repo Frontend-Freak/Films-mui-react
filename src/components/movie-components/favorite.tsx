@@ -1,39 +1,34 @@
-import { Box, Button } from "@mui/material";
-import { useEffect, useState } from "react";
-import { useAuthTokenContext } from "./../../context/context";
-import type { Movies } from "../../shared/types";
+import { Card, CardMedia, CardContent, Typography, Box, Button } from "@mui/material";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useEffect, useReducer } from "react";
 import Header from "../header";
-import { Card, CardMedia, CardContent, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
-import { useNavigate, useLocation } from "react-router-dom";
+import { URL_FAVORITE, initialState, getOptions } from "../../shared/constants";
+import { fetchingApi } from "../../api";
+import { movieReducer } from "../../shared/reducer";
+import { useSelector } from "react-redux";
+import type { AuthState } from "../../store/auth-reducer";
 
 export default function FavoritePage() {
-	const [favoriteMovies, setFavoriteMovies] = useState<Movies[]>([]);
 	const navigate = useNavigate();
 	const location = useLocation();
 
-	const { token, userId } = useAuthTokenContext();
+	const token = useSelector((state: AuthState) => state.token);
+	const userId = useSelector((state: AuthState) => state.userId);
+	const [state, dispatch] = useReducer(movieReducer, initialState);
+
 	useEffect(() => {
-		async function fetchingFavorite() {
-			const url = `https://api.themoviedb.org/3/account/${userId}/favorite/movies?language=ru-US`;
-			const options = {
-				method: "GET",
-				headers: {
-					accept: "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-			};
+		if (!userId) return;
+		async function loadFavorite() {
+			const url = URL_FAVORITE(userId);
 			try {
-				const response = await fetch(url, options);
-				const result = await response.json();
-				console.log(result.results);
-				setFavoriteMovies(result.results);
+				const dataFavorite = await fetchingApi({ url: url, options: getOptions(token) });
+				dispatch({ type: "LOAD_FAVORITE", change: dataFavorite.results });
 			} catch (error) {
 				console.error(error);
 			}
 		}
-		fetchingFavorite();
-	}, [token, userId]);
+		loadFavorite();
+	}, [token, userId, dispatch]);
 
 	function handleExitClick() {
 		if (location.state?.from === "favorite") {
@@ -55,9 +50,9 @@ export default function FavoritePage() {
 					Назад
 				</Button>
 
-				{favoriteMovies && favoriteMovies.length > 0 ? (
+				{state.favorite && state.favorite.length > 0 ? (
 					<Box sx={{ display: "flex", gap: "25px", flexWrap: "wrap", padding: "20px" }}>
-						{favoriteMovies.map((movie) => (
+						{state.favorite.map((movie) => (
 							<Card
 								key={movie.id}
 								sx={{ width: "250px", height: "500px" }}

@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { URL_FILMS } from "../../shared/constants";
 import type { Movies } from "../../shared/types";
-import { useAuthTokenContext } from "./../../context/context";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { Box, Button, CardMedia, Typography } from "@mui/material";
 import type { FiltersProps } from "../../shared/types";
+import { getOptions } from "../../shared/constants";
+import { URL_SEARCH_MOVIE } from "../../shared/constants";
+import { useSelector } from "react-redux";
+import type { AuthState } from "../../store/auth-reducer";
 
 export default function MovieCard({ state, dispatch }: FiltersProps) {
 	const [searchResult, setSearchResult] = useState<Movies[]>([]);
@@ -15,49 +18,36 @@ export default function MovieCard({ state, dispatch }: FiltersProps) {
 	const yearsTo = state.selectedYears[1];
 	const genre = state.selectedGenres.map((genre) => genre.id).join(",");
 
-	const { token } = useAuthTokenContext();
+	const token = useSelector((state: AuthState) => state.token)
 
 	useEffect(() => {
-		async function fetchingMovies() {
+		async function setMovies() {
 			const url = `${URL_FILMS}&page=${state.page}&sort_by=${state.sorting.value}&primary_release_date.gte=${yearsFrom}-01-01&primary_release_date.lte=${yearsTo}-12-31&with_genres=${genre}`;
-			const options = {
-				method: "GET",
-				headers: {
-					accept: "application/json",
-					Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMDE4NzQwMTQyNWE3NzRlNzk3M2M2YTFlNjQ1NmQ0NSIsIm5iZiI6MTc1OTcwNzgxNS45MDYsInN1YiI6IjY4ZTMwMmE3NzYwNDAwNTJhOWMyMjc2OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.8h-qKQP6Qdh4s8jo8-Wa9f9_Ahk5DmUsfl6EKAI0fwU`,
-				},
-			};
-			const response = await fetch(url, options);
-			const result = await response.json();
-			dispatch({ type: "SET_MOVIES", change: result.results });
-			dispatch({ type: "SET_TOTAL_PAGES", change: result.total_pages });
-			console.log(url, state.page);
+			try {
+				const response = await fetch(url, getOptions(token));
+				const result = await response.json();
+				dispatch({ type: "SET_MOVIES", change: result.results });
+				dispatch({ type: "SET_TOTAL_PAGES", change: result.total_pages });
+			} catch (error) {
+				console.error(error);
+			}
 		}
-		fetchingMovies();
+		setMovies();
 	}, [state.page, state.sorting, token, dispatch, genre, yearsFrom, yearsTo]);
 
 	useEffect(() => {
 		if (!token || !state.searchMovie.trim()) return;
-		async function fetchingSearch() {
-			const options = {
-				method: "GET",
-				headers: {
-					accept: "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-			};
+		async function setSearchMovie() {
 			try {
-				const response = await fetch(`https://api.themoviedb.org/3/search/movie?query=${state.searchMovie}&language=ru-RU&page=1`, options);
+				const response = await fetch(URL_SEARCH_MOVIE(state.searchMovie), getOptions(token));
 				const result = await response.json();
 				setSearchResult(result.results);
 			} catch (error) {
 				console.error(error);
 			}
 		}
-		fetchingSearch();
+		setSearchMovie();
 	}, [token, state.searchMovie]);
-
-	console.log(searchResult, state.movies);
 
 	const showMovies = state.searchMovie.trim() ? searchResult : state.movies;
 

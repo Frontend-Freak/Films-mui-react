@@ -25,9 +25,12 @@ export type MovieAction = { type: "SET_TOTAL_PAGES"; change: number } |
 { type: "SET_SORTING"; change: SortingTypes } | 
 { type: "SET_GENRES"; change: Genres[] } | 
 { type: "SET_YEARS"; change: [number, number] } | 
-{ type: "SET_SEARCH"; change: string }  | 
+{ type: "SET_SEARCH"; change: string } | 
 { type: "SET_MOVIES"; change: Movies[] } | 
-{ type: "SET_SEARCH_RESULT"; change: Movies[] }| 
+{ type: "SET_SEARCH_RESULT"; change: Movies[] } | 
+{ type: "CHECK_FAVORITE"; change: boolean } | 
+{ type: "SET_FAVORITE"; change: boolean } | 
+{ type: "LOAD_FAVORITE"; change: Movies[] }|
 { type: "RESET_FILTERS" };
 
 export type MovieState = {
@@ -39,6 +42,8 @@ export type MovieState = {
 	searchMovie: string;
 	movies: Movies[];
 	searchResult: Movies[];
+	isFavorite: boolean;
+	favorite: Movies[];
 };
 
 export interface FiltersProps {
@@ -76,4 +81,15 @@ export interface AuthTokenContextType {
 	setToken: (token: string) => void;
 	userId: string;
 	setUserId: (id: string) => void;
+}
+
+
+export interface LoginCardProps {
+	title: string;
+	textFieldLabel: string;
+	cancelButton: string;
+	submitButton: string;
+	onClick: () => void;
+	value: string;
+	onChange: (value: React.ChangeEvent<HTMLInputElement>) => void;
 }

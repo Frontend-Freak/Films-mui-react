@@ -1,12 +1,13 @@
 import { Autocomplete, Box, TextField } from "@mui/material";
 import { sortOptions } from "../../shared/constants";
-import type { SortingTypes } from "../../shared/types";
-import type { FiltersProps } from "../../shared/types";
+import type { SortingTypes, FiltersProps} from "../../shared/types";
 
 export default function Sorting({ state, dispatch }: FiltersProps) {
 	function handleSortChange(_: React.SyntheticEvent, newValue: SortingTypes | null) {
 		if (newValue) {
-			dispatch({ type: "SET_SORTING", change: newValue });
+			dispatch({ 
+				type: "SET_SORTING", change: newValue 
+			});
 		}
 	}
 

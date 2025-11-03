@@ -1,4 +1,5 @@
 import type { MovieState, MovieAction } from "../shared/types";
+import { DEFAULT_STRING_VALUE } from "./constants";
 
 export function movieReducer(state: MovieState, action: MovieAction): MovieState {
 	switch (action.type) {
@@ -18,8 +19,14 @@ export function movieReducer(state: MovieState, action: MovieAction): MovieState
 			return { ...state, movies: action.change };
 		case "SET_SEARCH_RESULT":
 			return { ...state, searchResult: action.change };
+		case "CHECK_FAVORITE":
+			return { ...state, isFavorite: action.change };
+		case "SET_FAVORITE":
+			return { ...state, isFavorite: action.change };
+		case "LOAD_FAVORITE":
+			return { ...state, favorite: action.change };
 		case "RESET_FILTERS":
-			return { ...state, page: 1, sorting: { value: "popularity.desc", label: "По популярности ↓" }, selectedGenres: [], selectedYears: [2000, 2025], searchMovie: "" };
+			return { ...state, page: 1, sorting: { value: "popularity.desc", label: "По популярности ↓" }, selectedGenres: [], selectedYears: [2000, 2025], searchMovie: DEFAULT_STRING_VALUE };
 		default:
 			return state;
 	}

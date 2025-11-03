@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { URL_REVIEW } from "../../shared/constants";
-import type { OverviewTypes, Movies } from "../../shared/types";
-import { useAuthTokenContext } from "./../../context/context";
+import type { Movies, OverviewTypes } from "../../shared/types";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { Box, CardMedia, Typography, Button } from "@mui/material";
@@ -10,14 +9,25 @@ import GradeOutlinedIcon from "@mui/icons-material/GradeOutlined";
 import StarOutlinedIcon from "@mui/icons-material/StarOutlined";
 import { IconButton } from "@mui/material";
 import Header from "../header";
+import { useReducer } from "react";
+import { movieReducer } from "../../shared/reducer";
+import { initialState } from "../../shared/constants";
+import { URL_FAVORITE, URL_CHECK_FAVORITE } from "../../shared/constants";
+import { fetchingApi } from "../../api";
+import { getOptions } from "../../shared/constants";
+import { useSelector } from "react-redux";
+import type { AuthState } from "../../store/auth-reducer";
 
 export default function Overview() {
 	const { id } = useParams();
 	const [overview, setOverview] = useState<OverviewTypes | null>(null);
 	const navigate = useNavigate();
 	const location = useLocation();
-	const [isFavorite, setIsFavorite] = useState(false);
-	const { token, userId } = useAuthTokenContext();
+	const token = useSelector((state: AuthState) => state.token)
+	const userId = useSelector((state: AuthState) => state.userId)
+	const [state, dispatch] = useReducer(movieReducer, initialState);
+
+	console.log(state.isFavorite);
 
 	function handleExitClick() {
 		if (location.state?.from === "favorite") {
@@ -29,67 +39,64 @@ export default function Overview() {
 
 	useEffect(() => {
 		if (!id) return;
-		async function fetchingOverview() {
-			const options = {
-				method: "GET",
-				headers: {
-					accept: "application/json",
-					Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMDE4NzQwMTQyNWE3NzRlNzk3M2M2YTFlNjQ1NmQ0NSIsIm5iZiI6MTc1OTcwNzgxNS45MDYsInN1YiI6IjY4ZTMwMmE3NzYwNDAwNTJhOWMyMjc2OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.8h-qKQP6Qdh4s8jo8-Wa9f9_Ahk5DmUsfl6EKAI0fwU`,
-				},
-			};
-			const response = await fetch(`${URL_REVIEW}${id}?&language=ru-US`, options);
-			const result = await response.json();
-			setOverview(result);
-		}
-
-		async function checkFavorite() {
-			if (!userId) return;
-			const response = await fetch(`https://api.themoviedb.org/3/account/${userId}/favorite/movies?language=ru-US&sort_by=created_at.asc`, {
-				method: "GET",
-				headers: {
-					accept: "application/json",
-					Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMDE4NzQwMTQyNWE3NzRlNzk3M2M2YTFlNjQ1NmQ0NSIsIm5iZiI6MTc1OTcwNzgxNS45MDYsInN1YiI6IjY4ZTMwMmE3NzYwNDAwNTJhOWMyMjc2OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.8h-qKQP6Qdh4s8jo8-Wa9f9_Ahk5DmUsfl6EKAI0fwU`,
-				},
-			});
+		async function loadOverview() {
+			const url = `${URL_REVIEW}${id}?&language=ru-US`;
 			try {
-				const data = await response.json();
-				const movies: Movies[] = data.results;
-				setIsFavorite(movies.some((movie) => movie.id === Number(id)));
+				const overviewData = await fetchingApi({ url, options: getOptions(token) });
+				setOverview(overviewData);
 			} catch (error) {
 				console.error(error);
 			}
 		}
-		fetchingOverview();
+
+		async function checkFavorite() {
+			if (!userId) return;
+			const url = URL_FAVORITE(userId);
+
+			try {
+				const favoriteData = await fetchingApi({ url, options: getOptions(token) });
+				const isFavorite = favoriteData.results.some((movie: Movies) => movie.id === Number(id));
+				dispatch({ type: "CHECK_FAVORITE", change: isFavorite });
+			} catch (error) {
+				console.error(error);
+			}
+		}
+		loadOverview();
 		checkFavorite();
-	}, [id, token, userId]);
+	}, [id, token, userId, dispatch]);
 
 	async function handelAddFavoriteClick(movieId: number) {
-		const favoriteAction = !isFavorite;
+		const favoriteAction = !state.isFavorite;
 		if (!userId) return;
-		const response = await fetch(`https://api.themoviedb.org/3/account/${userId}/favorite`, {
+		const url = URL_CHECK_FAVORITE(userId);
+		const options = {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json;charset=utf-8",
-				Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMDE4NzQwMTQyNWE3NzRlNzk3M2M2YTFlNjQ1NmQ0NSIsIm5iZiI6MTc1OTcwNzgxNS45MDYsInN1YiI6IjY4ZTMwMmE3NzYwNDAwNTJhOWMyMjc2OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.8h-qKQP6Qdh4s8jo8-Wa9f9_Ahk5DmUsfl6EKAI0fwU`,
+				Authorization: `Bearer ${token}`,
 			},
 			body: JSON.stringify({
 				media_type: "movie",
 				media_id: movieId,
 				favorite: favoriteAction,
 			}),
-		});
+		};
 		try {
-			const data = await response.json();
-			console.log(data);
-			setIsFavorite(favoriteAction);
+			const response = await fetch(url, options);
+			if (!response.ok) return;
+			dispatch({ type: "CHECK_FAVORITE", change: favoriteAction });
 		} catch (error) {
 			console.error(error);
 		}
 	}
+	
+	
 
 	if (!overview) {
 		return;
 	}
+
+	const releaseYear = overview.release_date.slice(0, 4)
 	return (
 		<Box>
 			<Header />
@@ -109,8 +116,8 @@ export default function Overview() {
 				<CardContent>
 					<Box sx={{ display: "flex", justifyContent: "space-between" }}>
 						<Typography sx={{ fontSize: "25px", fontWeight: "600" }}>
-							{`${overview.title} (${overview.release_date.slice(0, 4)})`}
-							<IconButton onClick={() => void handelAddFavoriteClick(overview.id)}>{!isFavorite ? <GradeOutlinedIcon /> : <StarOutlinedIcon />}</IconButton>
+							{`${overview.title} (${releaseYear})`}
+							<IconButton onClick={() => void handelAddFavoriteClick(overview.id)}>{!state.isFavorite ? <GradeOutlinedIcon /> : <StarOutlinedIcon />}</IconButton>
 						</Typography>
 						<Button onClick={handleExitClick}>Назад</Button>
 					</Box>

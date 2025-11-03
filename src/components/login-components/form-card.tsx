@@ -1,15 +1,6 @@
 import { Box, Button, Card, Typography, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-
-interface LoginCardProps {
-	title: string;
-	textFieldLabel: string;
-	cancelButton: string;
-	submitButton: string;
-	onClick: () => void;
-	value: string;
-	onChange: (value: React.ChangeEvent<HTMLInputElement>) => void;
-}
+import type { LoginCardProps } from "../../shared/types";
 
 export default function FormCard({ title, textFieldLabel, cancelButton, submitButton, onClick, value, onChange }: LoginCardProps) {
 	const navigate = useNavigate();
