@@ -50,8 +50,9 @@ export default function Overview() {
 			try {
 				const response = await fetch(url, options);
 				const result = await response.json();
-				console.log(result.results);
-				setOverview(result.results);
+				console.log(result);
+				setOverview(result);
+
 			} catch (error) {
 				console.error(error);
 			}

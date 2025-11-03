@@ -69,6 +69,9 @@ export default function MovieCard({ state, dispatch }: FiltersProps) {
 
 	const showMovies = state.searchMovie.trim() ? searchResult : state.movies;
 
+
+	
+
 	return (
 		<Box sx={{ display: "flex", width: "100%", gap: "25px", margin: "0 auto", flexWrap: "wrap" }}>
 			{showMovies && showMovies.length > 0 ? (
