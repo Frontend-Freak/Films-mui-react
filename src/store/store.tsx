@@ -1,5 +1,5 @@
 import { createStore} from "redux";
-import { authReducer } from './auth-reducer'
+import { authReducer } from './reducers/auth-reducer'
 
 
 

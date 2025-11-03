@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FormCard from "./form-card";
-import { DEFAULT_STRING_VALUE, getOptions, URL_GET_USER_ID } from "../../shared/constants";
-import { fetchingApi } from "../../api";
+import { DEFAULT_STRING_VALUE, URL_GET_USER_ID } from "../../shared/constants";
 import { useSelector, useDispatch } from "react-redux";
-import type { AuthState } from "../../store/auth-reducer";
-import { setToken, setUserId } from "../../store/auth-action-types";
+import type { AuthState } from "../../store/reducers/auth-reducer";
+import { setToken, setUserId } from "../../store/actions/auth-action";
 
 export default function Login() {
 	const [isVisibleTokenForm, setIsVisibleTokenForm] = useState(false);
@@ -17,10 +16,18 @@ export default function Login() {
 	useEffect(() => {
 		async function setId() {
 			if (!token) return;
+			const options = {
+				method: "GET",
+				headers: {
+					accept: "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+			};
 			try {
-				const dataId = await fetchingApi({ url: URL_GET_USER_ID, options: getOptions(token) });
-				dispatch(setUserId(dataId.id));
-				localStorage.setItem("id", dataId.id || "");
+				const response = await fetch(URL_GET_USER_ID, options);
+				const result = await response.json();
+				dispatch(setUserId(result.id));
+				localStorage.setItem("id", result.id || "");
 			} catch (error) {
 				console.error(error);
 			}

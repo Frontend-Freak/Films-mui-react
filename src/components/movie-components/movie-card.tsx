@@ -6,10 +6,9 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { Box, Button, CardMedia, Typography } from "@mui/material";
 import type { FiltersProps } from "../../shared/types";
-import { getOptions } from "../../shared/constants";
 import { URL_SEARCH_MOVIE } from "../../shared/constants";
 import { useSelector } from "react-redux";
-import type { AuthState } from "../../store/auth-reducer";
+import type { AuthState } from "../../store/reducers/auth-reducer";
 
 export default function MovieCard({ state, dispatch }: FiltersProps) {
 	const [searchResult, setSearchResult] = useState<Movies[]>([]);
@@ -18,14 +17,25 @@ export default function MovieCard({ state, dispatch }: FiltersProps) {
 	const yearsTo = state.selectedYears[1];
 	const genre = state.selectedGenres.map((genre) => genre.id).join(",");
 
-	const token = useSelector((state: AuthState) => state.token)
+	const token = useSelector((state: AuthState) => state.token);
+
+	console.log(token);
 
 	useEffect(() => {
 		async function setMovies() {
 			const url = `${URL_FILMS}&page=${state.page}&sort_by=${state.sorting.value}&primary_release_date.gte=${yearsFrom}-01-01&primary_release_date.lte=${yearsTo}-12-31&with_genres=${genre}`;
+			const options = {
+				method: "GET",
+				headers: {
+					accept: "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+			};
 			try {
-				const response = await fetch(url, getOptions(token));
+				const response = await fetch(url, options);
 				const result = await response.json();
+				console.log(result.results);
+				console.log(result.total_pages);
 				dispatch({ type: "SET_MOVIES", change: result.results });
 				dispatch({ type: "SET_TOTAL_PAGES", change: result.total_pages });
 			} catch (error) {
@@ -38,10 +48,18 @@ export default function MovieCard({ state, dispatch }: FiltersProps) {
 	useEffect(() => {
 		if (!token || !state.searchMovie.trim()) return;
 		async function setSearchMovie() {
+			const options = {
+				method: "GET",
+				headers: {
+					accept: "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+			};
 			try {
-				const response = await fetch(URL_SEARCH_MOVIE(state.searchMovie), getOptions(token));
+				const response = await fetch(URL_SEARCH_MOVIE(state.searchMovie), options);
 				const result = await response.json();
 				setSearchResult(result.results);
+				console.log(result.results);
 			} catch (error) {
 				console.error(error);
 			}

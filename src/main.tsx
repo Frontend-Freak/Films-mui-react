@@ -7,7 +7,7 @@ import Overview from "./components/movie-components/overview.tsx";
 import Login from "./components/login-components/login.tsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import FavoritePage from "./components/movie-components/favorite.tsx";
-import { store } from "./store/auth-store.tsx";
+import { store } from "./store/store.tsx";
 import { Provider } from "react-redux";
 
 const router = createBrowserRouter([
@@ -37,3 +37,6 @@ createRoot(document.getElementById("root")!).render(
 		</Provider>
 	</StrictMode>
 );
+
+
+console.log(store.getState())

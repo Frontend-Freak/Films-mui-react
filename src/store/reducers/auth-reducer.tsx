@@ -1,17 +1,17 @@
-import { SET_TOKEN, SET_USERID } from "./auth-action-types";
+import { SET_TOKEN, SET_USERID } from "../actions-type/auth-action-types";
 
 export interface AuthState {
 	token: string;
 	userId: string;
 }
 
-interface AuthAction {
+export interface AuthAction {
 	type: string;
 	token?: string;
 	userId?: string;
 }
 
-const initialState = {
+const initialState: AuthState = {
 	token: localStorage.getItem("token") || "",
 	userId: localStorage.getItem("userId") || "",
 };

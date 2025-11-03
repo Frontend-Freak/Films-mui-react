@@ -2,11 +2,10 @@ import { Card, CardMedia, CardContent, Typography, Box, Button } from "@mui/mate
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useEffect, useReducer } from "react";
 import Header from "../header";
-import { URL_FAVORITE, initialState, getOptions } from "../../shared/constants";
-import { fetchingApi } from "../../api";
+import { URL_FAVORITE, initialState } from "../../shared/constants";
 import { movieReducer } from "../../shared/reducer";
 import { useSelector } from "react-redux";
-import type { AuthState } from "../../store/auth-reducer";
+import type { AuthState } from "../../store/reducers/auth-reducer";
 
 export default function FavoritePage() {
 	const navigate = useNavigate();
@@ -20,9 +19,17 @@ export default function FavoritePage() {
 		if (!userId) return;
 		async function loadFavorite() {
 			const url = URL_FAVORITE(userId);
+			const options = {
+				method: "GET",
+				headers: {
+					accept: "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+			};
 			try {
-				const dataFavorite = await fetchingApi({ url: url, options: getOptions(token) });
-				dispatch({ type: "LOAD_FAVORITE", change: dataFavorite.results });
+				const response = await fetch(url, options);
+				const result = await response.json();
+				dispatch({ type: "LOAD_FAVORITE", change: result.results });
 			} catch (error) {
 				console.error(error);
 			}

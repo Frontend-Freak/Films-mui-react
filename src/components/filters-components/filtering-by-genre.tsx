@@ -1,21 +1,29 @@
 import { Autocomplete, Checkbox, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
-import { URL_GENRES, icon, checkedIcon, getOptions } from "../../shared/constants";
+import { URL_GENRES, icon, checkedIcon } from "../../shared/constants";
 import type { FiltersProps, Genres } from "../../shared/types";
-import { fetchingApi } from "../../api";
 import { useSelector } from "react-redux";
-import type { AuthState } from "../../store/auth-reducer";
+import type { AuthState } from "../../store/reducers/auth-reducer";
 
 export default function GenresList({ state, dispatch }: FiltersProps) {
 	const [genres, setGenres] = useState<Genres[]>([]);
 
-	const token = useSelector((state: AuthState) => state.token)
+	const token = useSelector((state: AuthState) => state.token);
 
 	useEffect(() => {
 		async function loadGenres() {
+			const options = {
+				method: "GET",
+				headers: {
+					accept: "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+			};
 			try {
-				const dataGenres = await fetchingApi({ url: URL_GENRES, options: getOptions(token) });
-				setGenres(dataGenres.genres);
+				const response = await fetch(URL_GENRES, options);
+				const result = await response.json();
+				console.log(result);
+				setGenres(result.genres);
 			} catch (error) {
 				console.error(error);
 			}
@@ -24,8 +32,9 @@ export default function GenresList({ state, dispatch }: FiltersProps) {
 	}, [token]);
 
 	function handleSelectedGenresChange(_: React.SyntheticEvent, newValue: Genres[]) {
-		dispatch({ 
-			type: "SET_GENRES", change: newValue 
+		dispatch({
+			type: "SET_GENRES",
+			change: newValue,
 		});
 	}
 

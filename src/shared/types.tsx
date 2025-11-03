@@ -76,13 +76,6 @@ export interface OverviewTypes {
 	id: number;
 }
 
-export interface AuthTokenContextType {
-	token: string;
-	setToken: (token: string) => void;
-	userId: string;
-	setUserId: (id: string) => void;
-}
-
 
 export interface LoginCardProps {
 	title: string;
@@ -93,3 +86,7 @@ export interface LoginCardProps {
 	value: string;
 	onChange: (value: React.ChangeEvent<HTMLInputElement>) => void;
 }
+
+
+
+
